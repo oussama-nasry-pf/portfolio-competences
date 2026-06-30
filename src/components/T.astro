@@ -1,0 +1,17 @@
+---
+/* Rendu bilingue : injecte le FR côté serveur + un data-i18n
+   que le script client utilise pour basculer en EN.
+   Lève une erreur à la compilation si la clé n'existe pas. */
+import { MAP } from '../data/content';
+
+interface Props {
+  k: string;
+  as?: keyof HTMLElementTagNameMap;
+  class?: string;
+}
+
+const { k, as: Tag = 'span', class: className } = Astro.props;
+const entry = MAP[k];
+if (!entry) throw new Error(`[T] clé i18n manquante : "${k}"`);
+---
+<Tag data-i18n={k} class={className} set:html={entry.fr} />

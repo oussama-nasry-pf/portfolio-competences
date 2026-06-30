@@ -1,0 +1,475 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import T from '../components/T.astro';
+import { content, COLORS, site } from '../data/content';
+
+const BASE = import.meta.env.BASE_URL.endsWith('/')
+  ? import.meta.env.BASE_URL
+  : import.meta.env.BASE_URL + '/';
+const asset = (p: string) => BASE + p.replace(/^\//, '');
+
+const comps = content.competences;
+
+/* icônes (Lucide-style, stroke = currentColor) */
+const I = {
+  arrow: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
+  chevron: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
+  check: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  target: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>',
+  briefcase: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>',
+  layers: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
+  bars: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="13"/><line x1="12" y1="20" x2="12" y2="7"/><line x1="18" y1="20" x2="18" y2="10"/></svg>',
+  quote: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h4v6H7c0 2 1 3 3 3v2c-3 0-5-2-5-5V7zm9 0h4v6h-4c0 2 1 3 3 3v2c-3 0-5-2-5-5V7z"/></svg>',
+  award: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89 7 22l5-3 5 3-1.21-8.12"/></svg>',
+  trend: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
+  dot: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  grid: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+  mic: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/></svg>',
+  download: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  external: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
+  github: '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.7.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17 5 18 5.3 18 5.3c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>',
+};
+
+const stateKey: Record<string, string> = {
+  done: 'ui.stateDone',
+  progress: 'ui.stateProgress',
+  future: 'ui.stateFuture',
+};
+---
+<BaseLayout>
+  <!-- ░░ NAV ░░ -->
+  <nav class="nav">
+    <div class="nav-pill">
+      <a class="brand" href="#top" aria-label="Accueil">
+        <span class="brand-badge"><i></i><i></i><i></i><i></i></span>
+        <span class="brand-name"><T k="nav.brand" /></span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="#method"><T k="nav.method" /></a>
+        <a class="nav-link" href="#competences"><T k="nav.competences" /></a>
+        <a class="nav-link" href="#synthesis"><T k="nav.synthesis" /></a>
+        <span class="nav-dots" aria-hidden="true">
+          <a class="nav-dot t" href="#c1" title="Traiter"></a>
+          <a class="nav-dot a" href="#c2" title="Analyser"></a>
+          <a class="nav-dot v" href="#c3" title="Valoriser"></a>
+          <a class="nav-dot d" href="#c4" title="Développer"></a>
+        </span>
+        <a class="nav-link" href={asset(site.cv)} target="_blank" rel="noopener"><T k="nav.cv" /></a>
+        <span class="lang-toggle" role="group" aria-label="Langue / Language">
+          <button class="lang-opt active" data-lang="fr" type="button">FR</button>
+          <button class="lang-opt" data-lang="en" type="button">EN</button>
+        </span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ░░ HERO ░░ -->
+  <header class="hero" id="top">
+    <div class="hero-grid-bg"></div>
+    <div class="hero-blobs"><i></i><i></i><i></i><i></i></div>
+    <div class="container hero-inner">
+      <span class="hero-kicker">
+        <span class="seg"><i></i><i></i><i></i><i></i></span>
+        <T k="hero.kicker" />
+      </span>
+      <h1 class="hero-title"><T k="hero.title" /></h1>
+      <p class="hero-lead"><T k="hero.lead" /></p>
+      <p class="hero-lead2"><T k="hero.lead2" /></p>
+      <div class="hero-cta">
+        <a class="btn btn-solid" href="#method"><T k="hero.cta1" /><Fragment set:html={I.arrow} /></a>
+        <a class="btn btn-ghost" href="#competences"><T k="hero.cta2" /></a>
+      </div>
+    </div>
+    <a class="scroll-hint" href="#method" aria-label="Défiler">
+      <span class="scroll-mouse"><span class="scroll-wheel"></span></span>
+      <T k="hero.scrollHint" />
+    </a>
+  </header>
+
+  <!-- ░░ MÉTHODE ░░ -->
+  <section class="section" id="method">
+    <div class="container">
+      <div class="s-head reveal" style="--c:var(--ink)">
+        <span class="eyebrow"><T k="method.kicker" /></span>
+        <h2><T k="method.title" /></h2>
+        <p><T k="method.lead" /></p>
+      </div>
+      <div class="steps">
+        {content.method.steps.map((step, i) => (
+          <div class="step reveal" style={`transition-delay:${i * 0.07}s`}>
+            <div class="step-n">{step.n}</div>
+            <h3><T k={`method.steps.${i}.title`} /></h3>
+            <p><T k={`method.steps.${i}.text`} /></p>
+            <span class="step-arrow"><Fragment set:html={I.chevron} /></span>
+          </div>
+        ))}
+      </div>
+      <div class="ref-note reveal">
+        <span class="rn-icon"><i></i><i></i><i></i><i></i></span>
+        <div>
+          <h3><T k="method.refTitle" /></h3>
+          <p><T k="method.refText" /></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ APERÇU DES 4 COMPÉTENCES ░░ -->
+  <section class="section-alt" id="competences">
+    <div class="container">
+      <div class="s-head reveal" style="--c:var(--ink)">
+        <span class="eyebrow"><T k="competencesIntro.label" /></span>
+        <h2><T k="ui.overviewTitle" /></h2>
+        <p><T k="ui.overviewSub" /></p>
+      </div>
+      <div class="comp-cards">
+        {comps.map((c, i) => {
+          const col = COLORS[c.color as keyof typeof COLORS];
+          return (
+            <a
+              class="comp-card reveal"
+              href={`#c${i + 1}`}
+              style={`--cc:${col.base};--cc-soft:${col.soft};--cc-line:${col.line};transition-delay:${i * 0.06}s`}
+            >
+              <div class="comp-card-top">
+                <span class="comp-card-num">{c.num}</span>
+                <span class="comp-card-badge"><T k={`competences.${i}.short`} /></span>
+              </div>
+              <h3><T k={`competences.${i}.full`} /></h3>
+              <p><T k={`competences.${i}.tagline`} /></p>
+              <span class="comp-card-foot"><T k="ui.seeDetail" /><Fragment set:html={I.chevron} /></span>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ LES 4 COMPÉTENCES (détail) ░░ -->
+  {comps.map((c, i) => {
+    const col = COLORS[c.color as keyof typeof COLORS];
+    return (
+      <section
+        class="comp"
+        id={`c${i + 1}`}
+        style={`--c:${col.base};--c-soft:${col.soft};--c-line:${col.line}`}
+      >
+        <span class="comp-watermark" aria-hidden="true">{c.num}</span>
+        <div class="container comp-inner">
+
+          <div class="comp-head reveal">
+            <div class="comp-chip">{c.num}</div>
+            <div>
+              <span class="comp-tag">
+                <span class="dot"></span>
+                <T k="ui.competence" /> {c.num} · <T k={`competences.${i}.short`} />
+              </span>
+              <h2 class="comp-title"><T k={`competences.${i}.full`} /></h2>
+              <p class="comp-tagline"><T k={`competences.${i}.tagline`} /></p>
+              <p class="comp-def"><T k={`competences.${i}.definition`} /></p>
+              <div class="comp-situations">
+                {c.situations.map((_s, j) => (
+                  <span class="sit-chip">
+                    <Fragment set:html={I.briefcase} />
+                    <T k={`competences.${i}.situations.${j}`} />
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div class="comp-body">
+            {/* Niveaux */}
+            <div class="panel reveal">
+              <div class="panel-title">
+                <span class="pt-icon"><Fragment set:html={I.bars} /></span>
+                <T k="ui.levelsTitle" />
+              </div>
+              <div class="levels">
+                {c.niveau.levels.map((lvl, k) => (
+                  <div class={`level ${lvl.state}`}>
+                    <span class="level-badge">N{lvl.n}</span>
+                    <div class="level-body">
+                      <div class="level-label"><T k={`competences.${i}.niveau.levels.${k}.label`} /></div>
+                      <div class="level-state"><T k={stateKey[lvl.state]} /></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div class="level-claim">
+                <Fragment set:html={I.target} />
+                <T k={`competences.${i}.niveau.claim`} />
+              </div>
+            </div>
+
+            {/* Composantes essentielles */}
+            <div class="panel reveal reveal-d1">
+              <div class="panel-title">
+                <span class="pt-icon"><Fragment set:html={I.layers} /></span>
+                <T k="ui.ceTitle" />
+              </div>
+              <div class="ce-list">
+                {c.ce.map((ce, k) => (
+                  <div class="ce-item">
+                    <span class="ce-check"><Fragment set:html={I.check} /></span>
+                    <div>
+                      <span class="ce-code">{ce.code}</span>
+                      <span class="ce-text"><T k={`competences.${i}.ce.${k}.text`} /></span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Traces */}
+          <div class="traces-head reveal">
+            <h3><span class="th-bar"></span><T k="ui.tracesTitle" /></h3>
+            <p><T k="ui.tracesSub" /></p>
+          </div>
+          <div class="traces-grid">
+            {c.traces.map((tr, k) => (
+              <article class="trace reveal" style={`transition-delay:${k * 0.07}s`}>
+                {tr.kind === 'img' && (
+                  <div class="trace-media">
+                    <span class="trace-badge"><T k={`competences.${i}.traces.${k}.badge`} /></span>
+                    <img
+                      src={asset(tr.img)}
+                      alt=""
+                      loading="lazy"
+                      class="zoomable"
+                      data-full={asset(tr.img)}
+                    />
+                  </div>
+                )}
+                {tr.kind === 'web' && (
+                  <div class="trace-mock">
+                    <div class="mock-bar">
+                      <span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-dot"></span>
+                      <span class="mock-url">oussama-nasry-pf.github.io/portfolio-competences</span>
+                    </div>
+                    <div class="mock-screen"><span class="mock-seg"><i></i><i></i><i></i><i></i></span></div>
+                  </div>
+                )}
+                {tr.kind === 'code' && (
+                  <div class="trace-mock">
+                    <div class="mock-bar">
+                      <span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-dot"></span>
+                      <span class="mock-url">~/portfolio-competences — git</span>
+                    </div>
+                    <div class="mock-screen">
+                      <code class="mock-code">
+                        <span class="ln"><span class="git">$ git</span> <b>commit</b> -m "feat: section compétence"</span>
+                        <span class="ln"><span class="kw">$ git</span> <b>push</b> origin main</span>
+                        <span class="ln">→ GitHub Actions · <b>build</b> ✓</span>
+                        <span class="ln">→ <b>deploy</b> → GitHub Pages ✓</span>
+                      </code>
+                    </div>
+                  </div>
+                )}
+                <div class="trace-body">
+                  {tr.kind !== 'img' && (
+                    <span class="trace-badge" style="position:static;display:inline-flex;margin-bottom:12px;align-self:flex-start">
+                      <T k={`competences.${i}.traces.${k}.badge`} />
+                    </span>
+                  )}
+                  <h4><T k={`competences.${i}.traces.${k}.title`} /></h4>
+                  <p><T k={`competences.${i}.traces.${k}.desc`} /></p>
+                  <div class="trace-tags">
+                    {tr.tags.map((t) => <span class="trace-tag">{t}</span>)}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {/* Preuve */}
+          <div class="preuve reveal">
+            <span class="preuve-label"><Fragment set:html={I.quote} /><T k="ui.preuveLabel" /></span>
+            <p><T k={`competences.${i}.preuve`} /></p>
+          </div>
+
+          {/* Forces / Axes */}
+          <div class="fa-grid">
+            <div class="fa forces reveal">
+              <div class="fa-title"><span class="fa-ic"><Fragment set:html={I.award} /></span><T k="ui.forces" /></div>
+              <ul>
+                {c.forces.map((_f, j) => (
+                  <li><Fragment set:html={I.dot} /><T k={`competences.${i}.forces.${j}`} /></li>
+                ))}
+              </ul>
+            </div>
+            <div class="fa axes reveal reveal-d1">
+              <div class="fa-title"><span class="fa-ic"><Fragment set:html={I.trend} /></span><T k="ui.axes" /></div>
+              <ul>
+                {c.axes.map((_a, j) => (
+                  <li><Fragment set:html={I.trend} /><T k={`competences.${i}.axes.${j}`} /></li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Apprentissages critiques */}
+          <div class="ac-wrap reveal">
+            <div class="ac-head">
+              <span class="pt-icon"><Fragment set:html={I.layers} /></span>
+              <h3><T k="ui.acTitle" /></h3>
+              <span>· <T k="ui.acSub" /></span>
+            </div>
+            <div class="ac-grid">
+              {c.ac.map((ac, k) => (
+                <div class="ac-item">
+                  <span class="ac-code">{ac.code}</span>
+                  <p><T k={`competences.${i}.ac.${k}.text`} /></p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </section>
+    );
+  })}
+
+  <!-- ░░ SYNTHÈSE ░░ -->
+  <section class="synthesis" id="synthesis">
+    <div class="container">
+      <div class="s-head reveal">
+        <span class="eyebrow"><T k="synthesis.kicker" /></span>
+        <h2><T k="synthesis.title" /></h2>
+        <p><T k="synthesis.lead" /></p>
+      </div>
+      <div class="synth-grid">
+        {comps.map((c, i) => {
+          const col = COLORS[c.color as keyof typeof COLORS];
+          const levels = c.niveau.levels;
+          return (
+            <div class="synth-card reveal" style={`--cc:${col.base};transition-delay:${i * 0.06}s`}>
+              <div class="synth-card-n">{c.num} · <T k={`competences.${i}.short`} /></div>
+              <h3><T k={`competences.${i}.short`} /></h3>
+              <div class="synth-bars">
+                {levels.map((lvl) => <i class={lvl.state === 'done' ? 'on' : ''}></i>)}
+              </div>
+              <p><T k={`competences.${i}.niveau.claim`} /></p>
+            </div>
+          );
+        })}
+      </div>
+      <div class="synth-closing reveal">
+        <span class="sc-icon"><Fragment set:html={I.trend} /></span>
+        <div>
+          <h3><T k="synthesis.closingTitle" /></h3>
+          <p><T k="synthesis.closing" /></p>
+        </div>
+      </div>
+      <div class="oral-note reveal">
+        <Fragment set:html={I.mic} />
+        <T k="synthesis.oralNote" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ FOOTER ░░ -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span class="footer-line"><T k="footer.line" /></span>
+      <div class="footer-links">
+        <a href={asset(site.cv)} target="_blank" rel="noopener"><Fragment set:html={I.download} /><T k="nav.cv" /></a>
+        <a href={site.repo} target="_blank" rel="noopener"><Fragment set:html={I.github} />GitHub</a>
+        <a href={site.perso} target="_blank" rel="noopener"><Fragment set:html={I.external} /><T k="footer.backPerso" /></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ░░ LIGHTBOX ░░ -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <div class="lightbox-bg" data-close></div>
+    <div class="lightbox-inner">
+      <button class="lightbox-close" data-close aria-label="Fermer">✕</button>
+      <img src="" alt="" id="lightbox-img" />
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { MAP } from '../data/content';
+
+  /* ---- Bascule FR / EN ---------------------------------- */
+  const STORE = 'pf-comp-lang';
+  function setLang(lang: 'fr' | 'en') {
+    document.querySelectorAll<HTMLElement>('[data-i18n]').forEach((el) => {
+      const entry = MAP[el.dataset.i18n as string];
+      if (entry) el.innerHTML = entry[lang];
+    });
+    document.documentElement.lang = lang;
+    const title = MAP['meta.docTitle'];
+    if (title) document.title = title[lang];
+    document.querySelectorAll<HTMLButtonElement>('.lang-opt').forEach((b) =>
+      b.classList.toggle('active', b.dataset.lang === lang)
+    );
+    try { localStorage.setItem(STORE, lang); } catch {}
+  }
+  document.querySelectorAll<HTMLButtonElement>('.lang-opt').forEach((btn) => {
+    btn.addEventListener('click', () => setLang(btn.dataset.lang as 'fr' | 'en'));
+  });
+  try {
+    const saved = localStorage.getItem(STORE);
+    if (saved === 'en') setLang('en');
+  } catch {}
+
+  /* ---- Reveals au scroll -------------------------------- */
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    },
+    { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+  );
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+  /* ---- Lightbox ----------------------------------------- */
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lightbox-img') as HTMLImageElement | null;
+  function openLb(src: string) {
+    if (!lb || !lbImg) return;
+    lbImg.src = src;
+    lb.classList.add('open');
+    lb.setAttribute('aria-hidden', 'false');
+  }
+  function closeLb() {
+    if (!lb) return;
+    lb.classList.remove('open');
+    lb.setAttribute('aria-hidden', 'true');
+  }
+  document.querySelectorAll<HTMLImageElement>('.zoomable').forEach((img) => {
+    img.addEventListener('click', () => openLb(img.dataset.full || img.src));
+  });
+  lb?.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', closeLb));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLb(); });
+
+  /* ---- Scrollspy nav ------------------------------------ */
+  const navMap: Record<string, HTMLElement | null> = {
+    method: document.querySelector('.nav-link[href="#method"]'),
+    competences: document.querySelector('.nav-link[href="#competences"]'),
+    synthesis: document.querySelector('.nav-link[href="#synthesis"]'),
+  };
+  const spy = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          Object.values(navMap).forEach((l) => l?.classList.remove('active'));
+          navMap[e.target.id]?.classList.add('active');
+        }
+      });
+    },
+    { rootMargin: '-45% 0px -50% 0px' }
+  );
+  ['method', 'competences', 'synthesis'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) spy.observe(el);
+  });
+</script>
